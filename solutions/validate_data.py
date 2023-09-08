@@ -1,3 +1,4 @@
+
 from pathlib import Path
 import sys
 import hashlib
@@ -14,14 +15,7 @@ def file_hash(filename):
     hash : str
         SHA1 hexadecimal hash string for contents of `filename`.
     """
-    sha1 = hashlib.sha1()
-    with open(filename, 'rb') as fobj:
-        while True:
-            data = fobj.read(65536)  # Read in 64k chunks
-            if not data:
-                break
-            sha1.update(data)
-    return sha1.hexdigest()
+
 
 
 def validate_data(data_directory):
@@ -39,30 +33,6 @@ def validate_data(data_directory):
         If hash value for any file is different from hash value recorded in
         ``data_hashes.txt`` file.
     """
-    data_path = Path(data_directory)
-    data_hashes_file = data_path / 'hash_list.txt'
-
-    if not data_hashes_file.is_file():
-        raise ValueError("The 'hash_list"
-                         ".txt' file does not exist in the specified directory.")
-
-    with open(data_hashes_file, 'r') as file:
-        for line in file:
-            parts = line.strip().split(' ')
-            if len(parts) != 2:
-                raise ValueError("Invalid format in 'data_hashes.txt'")
-
-            recorded_hash, filename = parts[0], parts[1]
-            full_filename = data_path / filename
-
-            if not full_filename.is_file():
-                raise ValueError(f"File not found: {full_filename}")
-
-            calculated_hash = file_hash(full_filename)
-
-            if recorded_hash != calculated_hash:
-                raise ValueError(
-                    f"Hash mismatch for file '{filename}': expected {recorded_hash}, got {calculated_hash}")
 
 
 def main():
