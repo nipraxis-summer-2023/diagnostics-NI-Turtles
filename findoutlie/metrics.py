@@ -1,15 +1,12 @@
-""" Scan outlier metrics
-"""
+# findoutlie/metrics.py
 
-# Any imports you need
-
+import numpy as np
 
 def dvars(img):
     """ Calculate dvars metric on Nibabel image `img`
 
     The dvars calculation between two volumes is defined as the square root of
     (the mean of the (voxel differences squared)).
-
 
     Parameters
     ----------
@@ -22,11 +19,17 @@ def dvars(img):
         volumes in `img`.
     """
 
-    # Hint: remember 'axis='.  For example:
-    # In [2]: arr = np.array([[2, 3, 4], [5, 6, 7]])
-    # In [3]: np.mean(arr, axis=1)
-    # Out[2]: array([3., 6.])
-    #
-    # You may be be able to solve this in four lines, without a loop.
-    # But solve it any way you can.
+    # Ensure the image is loaded and has the necessary data.
+    if img is None:
+        raise ValueError("Invalid image")
 
+    # Get the data from the image.
+    data = img.get_fdata()
+
+    # Calculate differences between consecutive volumes along the time axis.
+    vol_diff = np.diff(data, axis=-1)
+
+    # Calculate spatial RMS (DVARS) for each volume.
+    dvars = np.sqrt(np.mean(vol_diff ** 2, axis=(0, 1, 2)))
+
+    return dvars
