@@ -1,5 +1,3 @@
-# findoutlie/metrics.py
-
 import numpy as np
 
 def dvars(img):
@@ -19,17 +17,17 @@ def dvars(img):
         volumes in `img`.
     """
 
-    # Ensure the image is loaded and has the necessary data.
-    if img is None:
-        raise ValueError("Invalid image")
+    try:
+        # Get the data from the image.
+        data = img.get_fdata()
 
-    # Get the data from the image.
-    data = img.get_fdata()
+        # Calculate differences between consecutive volumes along the time axis.
+        vol_diff = np.diff(data, axis=-1)
 
-    # Calculate differences between consecutive volumes along the time axis.
-    vol_diff = np.diff(data, axis=-1)
+        # Calculate spatial RMS (DVARS) for each volume.
+        dvars = np.sqrt(np.mean(vol_diff ** 2, axis=(0, 1, 2)))
 
-    # Calculate spatial RMS (DVARS) for each volume.
-    dvars = np.sqrt(np.mean(vol_diff ** 2, axis=(0, 1, 2)))
+        return dvars
 
-    return dvars
+    except AttributeError:
+        raise ValueError("Invalid image: The provided image does not have the necessary data.")
