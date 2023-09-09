@@ -2,6 +2,7 @@ from pathlib import Path
 import sys
 import hashlib
 
+
 def file_hash(filename):
     """ Get SHA1 hash of the contents of a file
     Parameters
@@ -22,6 +23,7 @@ def file_hash(filename):
             sha1.update(data)
     return sha1.hexdigest()
 
+
 def validate_data(data_directory):
     """ Read ``data_hashes.txt`` file in `data_directory`, check hashes
     Parameters
@@ -40,18 +42,11 @@ def validate_data(data_directory):
     data_path = Path(data_directory)
     data_hashes_file = data_path / 'hash_list.txt'
 
-    if not data_hashes_file.is_file():
-        raise ValueError("The 'hash_list.txt' file does not exist in the specified directory.")
-
-    with open(data_hashes_file, 'r') as file:
+    # Check if the data_hashes_file exists, let the code error naturally otherwise
+    with data_hashes_file.open('r') as file:
         for line in file:
-            parts = line.strip().split(' ')
-            if len(parts) != 2:
-                raise ValueError("Invalid format in 'data_hashes.txt'")
+            recorded_hash, filename = line.strip().split()
 
-
-
-            recorded_hash, filename = parts[0], parts[1]
             full_filename = data_path / filename
 
             if not full_filename.is_file():
@@ -60,9 +55,11 @@ def validate_data(data_directory):
             calculated_hash = file_hash(full_filename)
 
             if recorded_hash != calculated_hash:
-                raise ValueError(f"Hash mismatch for file '{filename}': expected {recorded_hash}, got {calculated_hash}")
+                raise ValueError(
+                    f"Hash mismatch for file '{filename}': expected {recorded_hash}, got {calculated_hash}")
 
-    print("Validation of Hash sucess")
+    print("Validation of Hash List is Successful")
+
 
 def main():
     # This function (main) is called when this file is run as a script.
@@ -73,6 +70,7 @@ def main():
     data_directory = sys.argv[1]
     # Call the function to validate data in the data directory
     validate_data(data_directory)
+
 
 if __name__ == '__main__':
     # Python is running this file as a script, not importing it.
