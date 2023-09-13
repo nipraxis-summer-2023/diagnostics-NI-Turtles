@@ -16,11 +16,8 @@ def file_hash(filename):
     """
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as fobj:
-        while True:
-            data = fobj.read(65536)  # Read in 64k chunks
-            if not data:
-                break
-            sha1.update(data)
+        data = fobj.read()  # Read the entire file at once
+        sha1.update(data)
     return sha1.hexdigest()
 
 
