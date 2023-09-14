@@ -9,6 +9,7 @@ def file_hash(filename):
     ----------
     filename : str
         Name of file to read
+
     Returns
     -------
     hash : str
@@ -18,7 +19,8 @@ def file_hash(filename):
     with open(filename, 'rb') as fobj:
         data = fobj.read()  # Read the entire file at once
         sha1.update(data)
-    return sha1.hexdigest()
+    contents = Path(filename).read_bytes()
+    return hashlib.sha1(contents).hexdigest()
 
 
 def validate_data(data_directory):
@@ -27,33 +29,35 @@ def validate_data(data_directory):
     ----------
     data_directory : str
         Directory containing data and ``data_hashes.txt`` file.
+
     Returns
     -------
     None
+
     Raises
     ------
     ValueError:
         If hash value for any file is different from hash value recorded in
         ``data_hashes.txt`` file.
     """
+
     data_path = Path(data_directory)
     data_hashes_file = data_path / 'hash_list.txt'
 
-    # Check if the data_hashes_file exists, let the code error naturally otherwise
-    with data_hashes_file.open('r') as file:
-        for line in file:
-            recorded_hash, filename = line.strip().split()
+    # Read the file as text and split it into lines
+    for line in data_hashes_file.read_text().splitlines():
+        recorded_hash, filename = line.strip().split()
 
-            full_filename = data_path / filename
+        full_filename = data_path / filename
 
-            if not full_filename.is_file():
-                raise ValueError(f"File not found: {full_filename}")
+        if not full_filename.is_file():
+            raise ValueError(f"File not found: {full_filename}")
 
-            calculated_hash = file_hash(full_filename)
+        calculated_hash = file_hash(full_filename)
 
-            if recorded_hash != calculated_hash:
-                raise ValueError(
-                    f"Hash mismatch for file '{filename}': expected {recorded_hash}, got {calculated_hash}")
+        if recorded_hash != calculated_hash:
+            raise ValueError(
+                f"Hash mismatch for file '{filename}': expected {recorded_hash}, got {calculated_hash}")
 
     print("Validation of Hash List is Successful")
 
