@@ -1,51 +1,44 @@
-# Diagnostics project
+# Diagnostics Project
 
-Scripts go in the `scripts` directory.
+Welcome to the Diagnostics project! This repository houses Python scripts and modules crafted for the validation and detection of outliers in 4D images. The scripts reside in the `scripts` directory, while the library code (Python modules) can be found in the `findoutlie` directory. Below, you'll find instructions on how to acquire the data and put it to good use.
 
-Library code (Python modules) goes in the `findoutlie` directory.
+## Requirements
 
-You should put the code in this `findoutlie` directory on your Python PATH.
+To make the most of this project, ensure you have the following:
 
-This README file has instructions on how to get, validate and process the data.
+- Python 3.x
+- Internet access for data retrieval
 
-## Get the data
+## Get the Data
+
+Let's fetch the data just like we grab our morning newspaper—fresh and quick!
+
+1. Navigate to the data directory:
 
 ```
 cd data
+```
+
+2. Download and extract the data using the following commands:
+
+```
 curl -L https://figshare.com/ndownloader/files/34951650 -o group_data.tar
 tar xvf group_data.tar
 ```
 
-Add the hash_list file to Git:
-
-```
-git add data/group-*/hash_list.txt
-git commit -m "Add hash list file"
-```
-
-Change directory back to root of repository
+3. Return to the root of the repository:
 
 ```
 cd ..
 ```
 
-Add the hash_list file to Git:
+## Data Verification
+
+4. Validate the data as if inspecting the color of your tea:
 
 ```
-git add group-*/hash_list.txt
-git commit -m "Add hash list file"
-```
+python3 scripts/validate_data.py <path_to_data>
 
-Change directory back to root of repository
-
-```
-cd ..
-```
-
-## Check the data
-
-```
-python3 scripts/validate_data.py data
 ```
 
 ## Find outliers
@@ -54,22 +47,35 @@ python3 scripts/validate_data.py data
 python3 scripts/find_outliers.py data
 ```
 
-This should print output to the terminal of form:
+**Example:**
 
 ```
+
+python3 scripts/validate_data.py data
+
+```
+## Identifying Outliers
+
+Let's embark on an expedition to identify outliers, like uncovering hidden gems within the 4D landscape:
+
+```
+
+python3 scripts/find_outliers.py <path_to_data>
+
+```
+
+You'll receive an output in the following format:
+
+```
+
 <filename>, <outlier_index>, <outlier_index>, ...
-<filename>, <outlier_index>, <outlier_index>, ...
-```
-
-Where `<filename>` is the name of the image that has outlier scans, and
-`<outlier_index>` is an index to the volume in the 4D image that you have
-identified as an outlier.  0 refers to the first volume.  For example (these
-outlier IDs are completely random, for illustration):
+...
 
 ```
-data/sub-01/func/sub-01_task-taskzero_run-01_bold.nii.gz, 3, 21, 22, 104
-data/sub-01/func/sub-01_task-taskzero_run-02_bold.nii.gz, 11, 33, 91
-data/sub-03/func/sub-03_task-taskzero_run-02_bold.nii.gz, 101, 102, 132
-data/sub-08/func/sub-08_task-taskzero_run-01_bold.nii.gz, 0, 1, 2, 166, 167
-data/sub-09/func/sub-08_task-taskzero_run-01_bold.nii.gz, 3
-```
+## How to Contribute
+
+Your contributions are like pieces of a puzzle that make this project better every day. Join us in shaping the future!
+
+## Project Licensing
+
+This project enjoys the openness of a boundless sky. Should you have licensing inquiries, kindly consult with @matthew-brett.
