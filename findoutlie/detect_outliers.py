@@ -1,10 +1,59 @@
+""" Utilities for detecting outliers
+
+These functions take a vector of values, and return a boolean vector of the
+same length as the input, where True indicates the corresponding value is an
+outlier.
+
+The outlier detection routines will likely be adapted to the specific measure
+that is being worked on.  So, some detector functions will work on values > 0,
+other on normally distributed values etc.  The routines should check that their
+requirements are met and raise an error otherwise.
+"""
+
+# Any imports you need
 import numpy as np
-import sys
-import nipraxis as npx
-import nibabel as nib
 
 
-# useful functions when detecting outliers in fMRI data
+def iqr_detector(measures, iqr_proportion=1.5):
+    """ Detect outliers in `measures` using interquartile range.
+
+    Returns a boolean vector of same length as `measures`, where True means the
+    corresponding value in `measures` is an outlier.
+
+    Call Q1, Q2 and Q3 the 25th, 50th and 75th percentiles of `measures`.
+
+    The interquartile range (IQR) is Q3 - Q1.
+
+    An outlier is any value in `measures` that is either:
+
+    * > Q3 + IQR * `iqr_proportion` or
+    * < Q1 - IQR * `iqr_proportion`.
+
+    See: https://en.wikipedia.org/wiki/Interquartile_range
+
+    Parameters
+    ----------
+    measures : 1D array
+        Values for which we will detect outliers
+    iqr_proportion : float, optional
+        Scalar to multiply the IQR to form upper and lower threshold (see
+        above).  Default is 1.5.
+
+    Returns
+    -------
+    outlier_tf : 1D boolean array
+        A boolean vector of same length as `measures`, where True means the
+        corresponding value in `measures` is an outlier.
+    """
+
+    percentiles = [25, 75]
+    result = np.percentile(measures, q=percentiles)
+    Q1, Q3 = result
+    IQR = Q3 - Q1
+    upper_bound = Q3 + IQR * iqr_proportion  # upper outlier
+    lower_bound = Q1 - IQR * iqr_proportion  # lower outlier
+
+    return np.logical_or(measures > upper_bound, measures < lower_bound)
 
 
 def vol_mean(data):
@@ -23,23 +72,7 @@ def vol_mean(data):
     ]
 
 
-def vol_std(data):
-    """
-    Calculates the standard deviation of each volume in the 4D data
-
-    Parameters: nibable image
-    data: a nibable image (nibabel.nifti1.Nifti1Image), a 4D fMRI data with volumes over time
-    -------
-    Returns: list
-    A list of standard deviations, each itema being std per volume across time
-    """
-    return [
-        np.std(data[..., vol])
-        for vol in range(data.shape[-1])
-    ]
-
-
-def detect_outliers(data, n_std=2):
+def z_score_detector(data, n_std=2):
     """
     Detects outliers in the 4D data and returns a list of indices of outlier volumes
 
@@ -50,65 +83,19 @@ def detect_outliers(data, n_std=2):
     Returns: numpy array
     A list of indices of outlier volumes in the data (classifed as > n_std from the mean)
     """
+    if data.size == 0:
+        return np.array([])
+
     means = vol_mean(data)
     mean_means = np.mean(means)
     std_means = np.std(means)
-    threshold = n_std * std_means
-    diff = [
-        item - mean_means
-        for item in means
-    ]
-    outliers = np.asarray(np.abs(diff) > threshold).nonzero()[0]
+    if std_means == 0:  # avoid division by zero
+        return np.array([])
+
+    # Calculate Z-scores
+    z_scores = (means - mean_means) / std_means
+
+    # Find outliers using Z-scores
+    outliers = np.asarray(np.abs(z_scores) > n_std).nonzero()[0]
 
     return outliers
-
-
-def remove_outliers(data, outliers):
-    """
-    Removes the outlier volumes in the 4D data and returns data without outliers
-
-    Parameters: nibabel image, numpy array
-    data: a nibable image (nibabel.nifti1.Nifti1Image), a 4D
-    outliers: A list of indices of outlier volumes in the data
-    ------
-    Returns: nibabel image data (numpy.memmap, memory map)
-    A 4D fMRI data volumes over time, without outlier volumes
-
-    """
-    # data is a 4D list, with [x, y, z, volume]
-    return [
-        [
-            [
-                [volume for idx, volume in enumerate(z_space) if idx not in outliers]
-                for z_space in y_space
-            ]
-            for y_space in x_space
-        ]
-        for x_space in data
-    ]
-
-
-def main(file_path):
-    """
-    This function (main) is called when this file run as a script.
-
-    Parameters: str
-    A path to nibable image file
-    Returns: numpy array
-    A list of indices of outlier volumes in the data
-    """
-    data_fname = npx.fetch_file(file_path)  # Fetches the file
-    img = nib.load(data_fname)  # Loads the file
-    data = img.get_fdata()  # Gets the data from the image file
-
-    outliers = detect_outliers(data)
-    return outliers
-    # return remove_outliers(data, outliers)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 detect_outliers.py <path_to_data>")
-        sys.exit(1)
-    else:
-        main(sys.argv[1])
