@@ -1,4 +1,4 @@
-# Diagnostics Project
+### Diagnostics Project
 
 Welcome to the Diagnostics project! This repository houses Python scripts and modules crafted for the validation and detection of outliers in 4D images. The scripts reside in the `scripts` directory, while the library code (Python modules) can be found in the `findoutlie` directory. Below, you'll find instructions on how to acquire the data and put it to good use.
 
